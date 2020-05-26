@@ -181,7 +181,7 @@ $('body').onclick=function(event){
 }
 let center = new Center();
 center.get({
-	"url":location.origin+"/plan/info.json",
+	"url":location.origin+"/info.json",
 	"success":function(data){
 		localData = data;
 		tagPaint(tagCollect(data));
