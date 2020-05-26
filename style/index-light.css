@@ -1,0 +1,11 @@
+*{padding: 0;margin: 0;font-size: 16px;}
+.close{display: none;}
+h1{font-size: 3rem;margin:15px 0 30px;}
+main{margin: 20px 0;}
+#tags_box{padding: 10px 0;}
+span.tag{font-weight: 300;margin:0px 5px;padding:5px;font-size: 0.8rem;cursor: pointer;color: #979797;border-radius: 10px;}
+span.tag:hover{color:#333;background:#626;color:#eee;transition: all 0.5s;}
+#doc_view{}
+.doc{margin: 7.5px 0;}
+.doc>a,.doc>span{display: inline-block;margin: 0 5px;}
+.doc>.timestamp{font-size: 0.9rem;color: #919191;}

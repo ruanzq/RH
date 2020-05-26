@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<meta name="author" content="ruanzq">
+	<link rel="stylesheet" type="text/css" href="style/index-light.css">
+</head>
+<body>
+	<header>
+		<h1>Ruanzq</h1>
+		<hr>
+	</header>
+	<main>
+		<p>Cloud tag:</p>
+		<div id="tags_box"></div>
+		<div id="doc_view">
+			<div class="doc">
+				<a href="" class="doc_name">操作系统的实现</a>
+				<span class="timestamp">213213</span>
+			</div>
+			<div class="doc">
+				<a href="" class="doc_name">操作系统的实现</a>
+				<span class="timestamp">213213</span>
+			</div>
+			<div class="doc">
+				<a href="" class="doc_name">操作系统的实现</a>
+				<span class="timestamp">213213</span>
+			</div>
+			<div class="doc">
+				<a href="" class="doc_name">操作系统的实现</a>
+				<span class="timestamp">213213</span>
+			</div>
+		</div>
+	</main>
+	<footer></footer>
+<script type="text/javascript">
+function $(selector){
+	return document.querySelector(selector);
+}
+//提取标签信息
+function tagCollect(data){
+	result = [];
+	for(let i in data){
+		tags = data[i]['tags']
+		for(let tag in tags){
+			if(!result.includes(tags[tag]))
+				result.push(tags[tag]);
+		}
+	}
+	return result;
+}
+//绘制标签
+function tagPaint(tags){
+	let html_code = '';
+	for(let i in tags){
+		html_code = html_code + `<span class='tag'>${tags[i]}</span>`;
+	}
+	$('#tags_box').innerHTML = html_code;
+}
+
+//提取文章信息
+function docCollect(data){
+	let result = [];
+	for(let i in data){
+		result.push([data[i]['name'],data[i]['timestamp'],data[i]['href']]);
+	}
+	return result;
+}
+
+//过滤式提取
+function docFilter(data,tag){
+	let result = [];
+	for(let i in data){
+		let node = data[i];
+		if(node['tags'].includes(tag)){
+			result.push([node['name'],node['timestamp'],data[i]['href']]);
+		}
+	}
+	return result;
+}
+//节点制作
+function docMaker(count){
+	let result = [];
+	for(let i = 0;i<count;i++){
+		let temp = document.createElement('div');
+		temp.className = 'doc';
+		let aNode = document.createElement('a');
+		aNode.className = 'doc_name';
+		let spanNode = document.createElement('span');
+		spanNode.className = 'timestamp';
+		temp.appendChild(aNode);
+		temp.appendChild(spanNode);
+		result.push(temp);
+	}
+	return result;
+}
+//格式化时间
+function timeFormat(timestamp){
+	let d_value = Date.now()-timestamp;
+	d_value=~~(d_value/1000);
+	if(d_value<60){
+		d_value=d_value+" 秒前";
+	}else if(d_value>=60&&d_value<3600){
+		d_value=~~(d_value/60)+" 分钟前";
+	}else if(d_value>=3600&&d_value<86400){
+		d_value=~~(d_value/3600)+" 小时前";
+	}else if(d_value>=8640&&d_value<31536000){
+		d_value=~~(d_value/86400)+" 天前";
+	}else if(d_value>=31536000){
+		d_value=~~(d_value/31536000)+" 年前";
+	}
+	return "time: "+d_value;
+}
+//关闭节点
+function closeNode(count){
+	let nodeList = $('#doc_view').children;
+	let sum = nodeList.length;
+	for(let i = 0;i<count;i++,sum--){
+		let node = nodeList[sum-1].classList.add('close');
+	}
+}
+//文章绘制
+function docPaint(doc_info){
+	let box = $('#doc_view');
+	let nodeList = box.children;
+	let rest = nodeList.length;
+	let sum = doc_info.length;
+	//补齐或隐藏节点
+	if(sum > rest){
+		let div = sum - rest;
+		let newNode = docMaker(div);
+		for(let i in newNode){
+			box.appendChild(newNode[i]);
+		}
+	}else if(sum < rest){
+		let div = rest - sum;
+		closeNode(div);
+	}
+	// 开始绘制
+	for(let i in doc_info){
+		nodeList[i].classList.remove('close');
+		nodeList[i].children[0].innerHTML = doc_info[i][0];
+		nodeList[i].children[0].href = doc_info[i][2];
+		nodeList[i].children[1].innerHTML = timeFormat(doc_info[i][1]);
+	}
+}
+var Center = (function(){
+	let obj = null;
+	return function(){
+		if(obj == null){
+			this.ajax = new XMLHttpRequest();
+			this.event_click=[];
+			obj=this;
+			return this;
+		}else{
+			return obj;
+		}
+	}
+})();
+//执行一个get,ajax请求
+Center.prototype.get=function(info){
+	this.ajax.open("GET",info['url'],false);
+	this.ajax.send(null);
+	this._call(info,this.ajax.responseText);
+	this.ajax.abort();
+}
+Center.prototype._call=function(info,resp){
+	try{
+		let data = JSON.parse(resp);
+		info['success'](data);
+	}catch(err){
+		info['failed']('');
+	}
+}
+$('body').onclick=function(event){
+	if(event.target.className == 'tag'){
+		let tag = event.target.innerHTML;
+		docPaint(docFilter(localData,tag));
+	}
+}
+let center = new Center();
+center.get({
+	"url":location.origin+"/plan/info.json",
+	"success":function(data){
+		localData = data;
+		tagPaint(tagCollect(data));
+		docPaint(docCollect(data));
+	},
+	"failed":function(){console.log('fuck')}
+});
+</script>
+</body>
+</html>
